@@ -8,7 +8,7 @@ Um das Projekt herunterladen zu können, einfach
 ```bash
 git clone URL
 ```
-### Prerequisites
+### Vorraussetzungen
 
 Um diese Anwendung produktiv zu verwenden, wird ein Server benötigt, der docker und docker-compose bereitstellt.
 
@@ -22,29 +22,33 @@ Für die Entwicklung wird ein Rechner benötigt, der auch docker und docker-comp
 |        | IDE |
 |        | git |
 
-### Installing
-
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
+### Installation Rechner
 
 Um die Entwicklung beginnen zu können, muss zunächst das repo wie unter [Getting Started](## Getting Started) herunter geladen werden.
-Danach kann die docker umgebung mit
+
+Danach kann die docker Umgebung mit
 ```bash
-docker-compose up -d 
+docker-compose up -d nginx mysql phpmyadmin redis workspace
 ```
+gestartet werden.
+
+Hiernach findet man unter
+```
+http://localhost:80
+```
+die Anwendung zur Ansicht.
+
+Zur Entwicklung müssen die Dateien in einer IDE angepasst werden und die entsprechende Seite neu geladen werden.
+
+### Installation Server
+
+Für die Verbindung zum AWS-Server muss sich zu diesem mit ssh und einem Schlüssel verbunden werden, der Schlüssel liegt unter AWS-KEY. Vom Stammverzechniss des Projektes kann somit mit
+```bash
+ssh -i "AWS-KEY/aws-osp2.pem" ec2-user@ec2-18-196-136-105.eu-central-1.compute.amazonaws.com
+```
+eine Verbindung zum Server aufgebaut werden.
+
+
 
 ## Running the tests
 
