@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class Student
@@ -19,7 +21,7 @@ class Student extends Model
         'id' => 'integer'
     ];
 
-    public function classes() {
+    public function classes() : BelongsToMany {
         return $this->belongsToMany(SchoolClass::class, 'class_student')
             ->withPivot(
                 [
@@ -27,5 +29,14 @@ class Student extends Model
                     'guest_period_end'
                 ]
             );
+    }
+
+    public function lessons() : BelongsToMany {
+        return $this->belongsToMany(Lesson::class, 'lesson_students')
+            ->withPivot(['grade']);
+    }
+
+    public function exams() : HasMany {
+        return $this->hasMany(StudentExam::class);
     }
 }

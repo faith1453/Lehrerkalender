@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * Class Subject
@@ -18,7 +19,7 @@ class Subject extends Model
         'id' => 'integer'
     ];
 
-    public function teachers() {
+    public function teachers() : BelongsToMany {
         return $this->belongsToMany(Teacher::class, 'teacher_subject');
     }
 }

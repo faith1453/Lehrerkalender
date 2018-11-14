@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class ClassSemester
@@ -29,11 +30,11 @@ class ClassSemester extends Model
         'end'
     ];
 
-    public function classTeacher() {
+    public function classTeacher() : BelongsTo {
         return $this->belongsTo(Teacher::class, 'class_teacher_id');
     }
 
-    public function schoolClass() {
+    public function schoolClass() : BelongsTo {
         return $this->belongsTo(SchoolClass::class, 'class_id');
     }
 }

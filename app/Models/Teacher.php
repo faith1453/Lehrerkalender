@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
@@ -30,11 +32,11 @@ class Teacher extends Model implements AuthenticatableContract, AuthorizableCont
         'password'
     ];
 
-    public function subjects() {
+    public function subjects() : BelongsToMany {
         return $this->belongsToMany(Subject::class, 'teacher_subject');
     }
 
-    public function mainClassSemesters() {
+    public function mainClassSemesters() : HasMany {
         return $this->hasMany(ClassSemester::class, 'class_teacher_id');
     }
 }
