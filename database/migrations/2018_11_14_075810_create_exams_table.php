@@ -18,6 +18,8 @@ class CreateExamsTable extends Migration
             $table->unsignedInteger('class_semester_teacher_subject_id');
             $table->foreign('class_semester_teacher_subject_id')->references('id')->on('class_semester_teacher_subjects');
             $table->string('name');
+            $table->dateTime('start');
+            $table->dateTime('end');
             $table->unsignedInteger('max_points');
             $table->timestamps();
         });
