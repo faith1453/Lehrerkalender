@@ -22,8 +22,12 @@ class SchoolClass extends Model
         'id' => 'integer'
     ];
 
+    protected $fillable = [
+        'name'
+    ];
+
     public function students() : BelongsToMany {
-        return $this->belongsToMany(Student::class, 'class_student')
+        return $this->belongsToMany(Student::class, 'class_student', 'class_id', 'student_id')
             ->withPivot(
                 [
                     'guest_period_start',

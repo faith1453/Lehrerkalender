@@ -10,24 +10,34 @@ use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 
+/**
+ * Class Teacher
+ *
+ * @package App\Models
+ *
+ * @property int $id
+ * @property string $username
+ * @property string $password
+ * @property string $email
+ * @property bool $is_admin
+ */
 class Teacher extends Model implements AuthenticatableContract, AuthorizableContract
 {
     use Authenticatable;
     use Authorizable;
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
-    protected $fillable = [
-        'username', 'email', 'password',
+
+    protected $casts = [
+        'id' => 'integer',
+        'is_admin' => 'boolean'
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
+    protected $fillable = [
+        'username',
+        'password',
+        'email',
+        'is_admin'
+    ];
+
     protected $hidden = [
         'password'
     ];

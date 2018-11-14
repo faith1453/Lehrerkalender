@@ -21,7 +21,6 @@ class CreateClassStudentTable extends Migration
             $table->foreign('student_id')->references('id')->on('students');
             $table->date('guest_period_start')->nullable();
             $table->date('guest_period_end')->nullable();
-            $table->timestamps();
         });
     }
 

@@ -18,3 +18,7 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
+
+Route::get('/test1', 'APIController@createNewTeacher');
+Route::get('/test2', 'APIController@createNewStudent');
+Route::get('/test3', 'APIController@createNewSchoolClass');

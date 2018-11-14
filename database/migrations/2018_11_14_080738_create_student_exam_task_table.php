@@ -20,7 +20,6 @@ class CreateStudentExamTaskTable extends Migration
             $table->foreign('student_exam_id')->references('id')->on('student_exams');
             $table->foreign('exam_task_id')->references('id')->on('exam_tasks');
             $table->decimal('points', 6, 2);
-            $table->timestamps();
         });
     }
 

@@ -19,7 +19,6 @@ class CreateTeacherSubjectTable extends Migration
             $table->unsignedInteger('subject_id');
             $table->foreign('teacher_id')->references('id')->on('teachers');
             $table->foreign('subject_id')->references('id')->on('subjects');
-            $table->timestamps();
         });
     }
 
