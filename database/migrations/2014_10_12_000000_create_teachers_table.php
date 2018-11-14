@@ -18,6 +18,7 @@ class CreateTeachersTable extends Migration
             $table->string('username', 60)->unique();
             $table->string('email', 120);
             $table->string('password', 120);
+            $table->boolean('is_admin')->default(false);
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
