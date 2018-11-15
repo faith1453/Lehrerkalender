@@ -17,6 +17,7 @@ app.controller('LessonsController', function($scope, $http) {
         {name: 'Donnerstag', number: 4},
         {name: 'Freitag', number: 5}
     ];
+    $scope.lessonSelected = false;
 
     $http.get('/api/classes/get').then(
         function(response) {
@@ -42,6 +43,69 @@ app.controller('LessonsController', function($scope, $http) {
 
     $scope.reload();
 
+    $scope.openLesson = function(dayNumber, hourNumber) {
+        if($scope.tileEmpty(dayNumber, hourNumber)) {
+            if(_.isEmpty($scope.lessons)) {
+                $scope.lessons = [];
+            }
+            if(_.isEmpty($scope.lessons[dayNumber])) {
+                $scope.lessons[dayNumber] = [];
+            }
+            if(_.isEmpty($scope.lessons[dayNumber][hourNumber])) {
+                var newLesson = {
+                    topic: '',
+                    startNumber: hourNumber,
+                    endNumber: hourNumber,
+                    class_id: null,
+                    subject_id: null
+                };
+                $scope.lessons[dayNumber][hourNumber] = newLesson;
+                $scope.activeLesson = newLesson;
+            }
+        } else {
+            $scope.activeLesson = $scope.lessons[dayNumber][hourNumber];
+        }
+        $scope.activeLessonDayNumber = dayNumber;
+        $scope.lessonSelected = true;
+    };
+
+    $scope.expandTile = function(dayNumber, hourNumber) {
+        var lesson = $scope.lessons[dayNumber][hourNumber];
+        var futureEndNumber = lesson.endNumber + 1;
+        if(!_.isEmpty($scope.lessons[dayNumber][futureEndNumber])) {
+            return;
+        }
+        lesson.endNumber += 1;
+    };
+
+    $scope.saveActiveLesson = function() {
+        if(_.isEmpty($scope.activeLesson)) {
+            return;
+        }
+        $http.post('/api/lessons/save', {
+            lesson: $scope.activeLesson,
+            year: $scope.year,
+            week: $scope.week,
+            day: $scope.activeLessonDayNumber
+        }).then(
+            function(response) {
+                $scope.activeLesson.id = response.data;
+                console.log('Success');
+            },
+            function(response) {
+                console.log('Failure');
+            }
+        )
+    };
+
+    $scope.collapseTile = function(dayNumber, hourNumber) {
+        var lesson = $scope.lessons[dayNumber][hourNumber];
+        lesson.endNumber -= 1;
+        if(lesson.endNumber < lesson.startNumber) {
+            lesson.endNumber = lesson.startNumber;
+        }
+    };
+
     $scope.previousWeek = function() {
         $scope.week -= 1;
         if($scope.week < 1) {
@@ -65,7 +129,10 @@ app.controller('LessonsController', function($scope, $http) {
             return false;
         }
         return _.some($scope.lessons[dayNumber], function(lesson) {
-            return lesson.startNumber != lesson.endNumber
+            if(typeof lesson === 'undefined') {
+                return false;
+            }
+            return lesson.startNumber !== lesson.endNumber
                 && lesson.startNumber < hourNumber
                 && lesson.endNumber >= hourNumber;
         });
@@ -77,11 +144,60 @@ app.controller('LessonsController', function($scope, $http) {
             || _.isEmpty($scope.lessons[dayNumber][hourNumber])) {
             return 1;
         }
-        return $scope.lessons[dayNumber][hourNumber].startNumber - $scope.lessons[dayNumber][hourNumber].endNumber;
+        return 1 + $scope.lessons[dayNumber][hourNumber].endNumber - $scope.lessons[dayNumber][hourNumber].startNumber;
     };
 
     $scope.tileEmpty = function(dayNumber, hourNumber) {
         return _.isEmpty($scope.lessons) || _.isEmpty($scope.lessons[dayNumber]) || _.isEmpty($scope.lessons[dayNumber][hourNumber]);
+    };
+});
+
+app.controller('GradesController', function($scope, $http) {
+    $http.get('/api/classes/get').then(
+        function(response) {
+            $scope.classes = response.data;
+        }
+    );
+    $scope.reload = function() {
+        $http.get('/api/lessons/dates/' + $scope.class.id).then(
+            function(response) {
+                $scope.lessons = response.data;
+            }
+        );
+        $http.get('/api/students/get/' + $scope.class.id).then(
+            function(response) {
+                $scope.students = response.data;
+            }
+        );
+        $http.get('/api/grades/get/' + $scope.class.id).then(
+            function(response) {
+                $scope.grades = response.data;
+            }
+        )
+    };
+    $scope.saveGrades = function() {
+        $http.post('/api/grades/save', {grades: $scope.grades});
+    };
+
+    $scope.gradeExists = function(lessonId, studentId) {
+        return (!_.isEmpty($scope.grades)
+            && !_.isEmpty($scope.grades[lessonId])
+            && !_.isEmpty($scope.grades[lessonId][studentId]));
+    };
+
+    $scope.getStudentAverage = function(studentId) {
+        var total = 0;
+        var number = 0;
+        _.each($scope.grades, function(grades) {
+            if(!_.isEmpty(grades[studentId]) && !_.isEmpty(grades[studentId][0].grade)) {
+                total +=  parseFloat(grades[studentId][0].grade);
+                number++;
+            }
+        });
+        if(number === 0) {
+            return 0;
+        }
+        return (total / number);
     };
 });
 
@@ -93,5 +209,9 @@ app.config(function($routeProvider) {
         .when("/lessons", {
             templateUrl: 'templates/lessons.html',
             controller: 'LessonsController'
+        })
+        .when("/grades", {
+            templateUrl: 'templates/grades.html',
+            controller: 'GradesController'
         })
 });

@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ClassSemester;
 use App\Models\Lesson;
 use App\Models\SchoolClass;
 use App\Models\SemesterTeacherSubject;
 use App\Models\Student;
 use App\Models\Teacher;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class APIController extends Controller
 {
@@ -105,7 +108,7 @@ class APIController extends Controller
         foreach($semesterTeacherSubjects as $semesterTeacherSubject) {
             $classes[] = $semesterTeacherSubject->classSemester->schoolClass->toArray();
         }
-        return response(json_encode($classes));
+        return response(json_encode(collect($classes)->unique()));
     }
 
     public function getSubjects(Request $request) : Response
@@ -138,6 +141,8 @@ class APIController extends Controller
                 $endMapping = static::$timeslotMapping[$lesson->end->format('H:i:s')];
                 $lesson->startNumber = $startMapping;
                 $lesson->endNumber = $endMapping;
+                $lesson->class_id = $lesson->semesterTeacherSubject->classSemester->class_id;
+                $lesson->subject_id = $lesson->semesterTeacherSubject->subjects()->first()->id;
                 $processedLessons[] = $lesson;
             }
         }
@@ -158,15 +163,93 @@ class APIController extends Controller
     public function saveLesson(Request $request) : Response
     {
         $lessonData = $request->get('lesson', []);
-        if(array_key_exists($lessonData, 'id')) {
+        if(array_key_exists('id', $lessonData)) {
             $lesson = Lesson::find($lessonData['id']);
         } else {
             $lesson = new Lesson();
         }
-        $lesson->fill($lessonData);
+        $lesson->topic = $lessonData['topic'];
+        $startTime = new Carbon();
+        $startTime->setISODate($request->get('year'), $request->get('week'), $request->get('day'));
+        $startTime->setTimeFromTimeString(array_search($lessonData['startNumber'], static::$timeslotMapping));
+        $lesson->start = $startTime;
+        $endTime = new Carbon();
+        $endTime->setISODate($request->get('year'), $request->get('week'), $request->get('day'));
+        $endTime->setTimeFromTimeString(array_search($lessonData['endNumber'], static::$timeslotMapping));
+        $lesson->end = $endTime;
+        /** @var Teacher $teacher */
+        $teacher = $request->user();
+        $subjectId = $lessonData['subject_id'];
+        $classId = $lessonData['class_id'];
+        /** @var Builder $semesterQuery */
+        $semesterTeacherSubject = SemesterTeacherSubject::whereHas('subjects', function($query) use ($subjectId) {
+            $query->where('subjects.id', '=', $subjectId);
+        })
+            ->whereHas('teachers', function($query) use ($teacher) {
+            $query->where('teachers.id', '=', $teacher->id);
+        })
+            ->whereHas('classSemester', function($query) use ($classId, $startTime) {
+            $query->where('class_id', '=', $classId)
+                ->where('start', '<', $startTime->format('Y-m-d'))
+                ->where('end', '>', $startTime->format('Y-m-d'));
+        })->first();
+        $lesson->semesterTeacherSubject()->associate($semesterTeacherSubject);
         if($lesson->save()) {
+            /** @var SchoolClass $class */
+            $class = SchoolClass::find($classId);
+            $lesson->students()->sync($class->students()->get());
             return response($lesson->id);
         }
         return response('Failure', 400);
+    }
+
+    public function getLessonDates(Request $request, $classId) {
+        /** @var Teacher $teacher */
+        $teacher = $request->user();
+        /** @var SchoolClass $schoolClass */
+        $schoolClass = SchoolClass::find($classId);
+        $students = $schoolClass->students;
+        $validLessons = collect();
+        foreach($students as $student) {
+            $validLessons = $validLessons->merge($student->lessons()->whereHas('semesterTeacherSubject', function($query) use ($teacher) {
+                $query->whereHas('teachers', function($query) use ($teacher) {
+                    $query->where('teachers.id', '=', $teacher->id);
+                });
+            })->get());
+        }
+        return response(json_encode($validLessons->unique('id')->map(function($lesson) {return $lesson->toArray();})->sortBy('start')));
+    }
+
+    public function getStudents($classId) {
+        /** @var SchoolClass $schoolClass */
+        $schoolClass = SchoolClass::find($classId);
+        return response(json_encode($schoolClass->students->toArray()));
+    }
+
+    public function getClassLessonGrades(Request $request, $classId) {
+        /** @var Teacher $teacher */
+        $teacher = $request->user();
+        /** @var SchoolClass $schoolClass */
+        $schoolClass = SchoolClass::find($classId);
+        $students = $schoolClass->students;
+        $validLessons = collect();
+        foreach($students as $student) {
+            $validLessons = $validLessons->merge($student->lessons()->whereHas('semesterTeacherSubject', function($query) use ($teacher) {
+                $query->whereHas('teachers', function($query) use ($teacher) {
+                    $query->where('teachers.id', '=', $teacher->id);
+                });
+            })->get());
+        }
+        return response(json_encode($validLessons->pluck('pivot')->groupBy(['lesson_id', 'student_id'])->toArray()));
+    }
+
+    public function saveGrades(Request $request) {
+        $gradesData = collect($request->get('grades', []))->flatten(2);
+        foreach($gradesData as $gradeData) {
+            DB::table('lesson_student')
+                ->where('student_id', '=', $gradeData['student_id'])
+                ->where('lesson_id', '=', $gradeData['lesson_id'])
+                ->update(['grade' => $gradeData['grade']]);
+        }
     }
 }

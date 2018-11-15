@@ -19,7 +19,7 @@ class CreateLessonStudentTable extends Migration
             $table->unsignedInteger('student_id');
             $table->foreign('lesson_id')->references('id')->on('lessons');
             $table->foreign('student_id')->references('id')->on('students');
-            $table->float('grade');
+            $table->float('grade')->nullable();
         });
     }
 

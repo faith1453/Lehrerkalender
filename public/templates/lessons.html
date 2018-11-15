@@ -1,8 +1,8 @@
 <div>
-    <input type="button" ng-click="previousWeek()">
+    <button ng-click="previousWeek()">Vorherige Woche</button>
     <input type="number" ng-model="week" ng-blur="reload()">
     <input type="number" ng-model="year" ng-blur="reload()">
-    <input type="button" ng-click="nextWeek()">
+    <button ng-click="nextWeek()">Nächste Woche</button>
     <div class="col-md-8">
         <table>
             <tr>
@@ -11,18 +11,29 @@
             </tr>
             <tr ng-repeat="number in hourNumbers">
                 <td>{{number}}</td>
-                <td ng-repeat="day in days" ng-if="!tileHidden(day.number, number)" rowspan="{{getTileRowspan(day.number, number)}}">
+                <td ng-repeat="day in days" ng-hide="tileHidden(day.number, number)" rowspan="{{getTileRowspan(day.number, number)}}" ng-click="openLesson(day.number, number)">
                     <span ng-show="tileEmpty(day.number, number)">
                         +
                     </span>
                     <span ng-hide="tileEmpty(day.number, number)">
-                        EXISTS! :D
+                        <button ng-click="collapseTile(day.number, number)">REM</button>
+                        E
+                        <button ng-click="expandTile(day.number, number)">ADD</button>
                     </span>
                 </td>
             </tr>
         </table>
     </div>
-    <div class="col-md-4">
-
+    <div class="col-md-4" ng-if="lessonSelected">
+        <select ng-model="activeLesson.class_id" ng-options="class.id as class.name for class in classes">
+            <option value="">Klasse</option>
+        </select>
+        <select ng-model="activeLesson.subject_id" ng-options="subject.id as subject.name for subject in subjects">
+            <option value="">Fach</option>
+        </select>
+        <div class="col-md-12">
+            <textarea ng-model="activeLesson.topic"></textarea>
+        </div>
+        <button ng-click="saveActiveLesson()">Speichern</button>
     </div>
 </div>

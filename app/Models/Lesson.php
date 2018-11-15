@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * Class Lesson
  *
  * @package App\Models
+ *
+ * @property SemesterTeacherSubject $semesterTeacherSubject
  *
  * @property int $id
  * @property int $class_semester_teacher_subject_id

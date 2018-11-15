@@ -37,7 +37,7 @@ class Student extends Model
     }
 
     public function lessons() : BelongsToMany {
-        return $this->belongsToMany(Lesson::class, 'lesson_students')
+        return $this->belongsToMany(Lesson::class, 'lesson_student')
             ->withPivot(['grade']);
     }
 

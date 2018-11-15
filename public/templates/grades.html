@@ -1,0 +1,22 @@
+<div>
+    <select ng-model="class" ng-options="class as class.name for class in classes" ng-change="reload()">
+        <option value="">Klasse</option>
+    </select>
+    <table>
+        <tr>
+            <td></td>
+            <td ng-repeat="lesson in lessons">
+                <span title="{{lesson.topic}}">{{lesson.start}}</span>
+            </td>
+            <td>Gesamt</td>
+        </tr>
+        <tr ng-repeat="student in students">
+            <td>{{student.first_name + ' ' + student.last_name}}</td>
+            <td ng-repeat="lesson in lessons">
+                <input ng-if="gradeExists(lesson.id, student.id)" ng-model="grades[lesson.id][student.id][0].grade">
+            </td>
+            <td>{{getStudentAverage(student.id)}}</td>
+        </tr>
+    </table>
+    <button ng-click="saveGrades()">Save</button>
+</div>
