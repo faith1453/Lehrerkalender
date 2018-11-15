@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  *
  * @property int $id
  * @property int $class_semester_teacher_subject_id
+ * @property string $topic
  * @property Carbon $start
  * @property Carbon $end
  */

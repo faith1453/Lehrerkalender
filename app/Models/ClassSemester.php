@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @package App\Models
  *
+ * @property Teacher $classTeacher
+ * @property SchoolClass $schoolClass
+ *
  * @property int $id
  * @property int $class_id
  * @property int $class_teacher_id

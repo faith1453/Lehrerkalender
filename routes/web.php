@@ -11,14 +11,12 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
 Auth::routes();
 
-Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/', 'HomeController@index')->name('home');
 
 Route::get('/test1', 'APIController@createNewTeacher');
 Route::get('/test2', 'APIController@createNewStudent');
 Route::get('/test3', 'APIController@createNewSchoolClass');
+Route::get('/api/lessons/get/{year?}/{week?}', 'APIController@getLessons');
+Route::get('/api/classes/get', 'APIController@getClasses');

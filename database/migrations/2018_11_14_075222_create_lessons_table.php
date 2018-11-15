@@ -17,6 +17,7 @@ class CreateLessonsTable extends Migration
             $table->increments('id');
             $table->unsignedInteger('class_semester_teacher_subject_id');
             $table->foreign('class_semester_teacher_subject_id')->references('id')->on('class_semester_teacher_subjects');
+            $table->longText('topic');
             $table->dateTime('start');
             $table->dateTime('end');
             $table->timestamps();
