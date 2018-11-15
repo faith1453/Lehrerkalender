@@ -17,11 +17,7 @@ app.controller('LessonsController', function($scope, $http) {
         {name: 'Donnerstag', number: 4},
         {name: 'Freitag', number: 5}
     ];
-    /*$http.get('api/lessons/get').then(
-        function(result) {
-            $scope.lessons = result.data;
-        }
-    );*/
+
     $http.get('/api/classes/get').then(
         function(response) {
             $scope.classes = response.data;
@@ -44,6 +40,8 @@ app.controller('LessonsController', function($scope, $http) {
         );
     };
 
+    $scope.reload();
+
     $scope.previousWeek = function() {
         $scope.week -= 1;
         if($scope.week < 1) {
@@ -60,6 +58,30 @@ app.controller('LessonsController', function($scope, $http) {
             $scope.year += 1;
         }
         $scope.reload();
+    };
+
+    $scope.tileHidden = function(dayNumber, hourNumber) {
+        if(_.isEmpty($scope.lessons) || _.isEmpty($scope.lessons[dayNumber])) {
+            return false;
+        }
+        return _.some($scope.lessons[dayNumber], function(lesson) {
+            return lesson.startNumber != lesson.endNumber
+                && lesson.startNumber < hourNumber
+                && lesson.endNumber >= hourNumber;
+        });
+    };
+
+    $scope.getTileRowspan = function(dayNumber, hourNumber) {
+        if(_.isEmpty($scope.lessons)
+            || _.isEmpty($scope.lessons[dayNumber])
+            || _.isEmpty($scope.lessons[dayNumber][hourNumber])) {
+            return 1;
+        }
+        return $scope.lessons[dayNumber][hourNumber].startNumber - $scope.lessons[dayNumber][hourNumber].endNumber;
+    };
+
+    $scope.tileEmpty = function(dayNumber, hourNumber) {
+        return _.isEmpty($scope.lessons) || _.isEmpty($scope.lessons[dayNumber]) || _.isEmpty($scope.lessons[dayNumber][hourNumber]);
     };
 });
 

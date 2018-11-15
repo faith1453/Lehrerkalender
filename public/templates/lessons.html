@@ -3,24 +3,26 @@
     <input type="number" ng-model="week" ng-blur="reload()">
     <input type="number" ng-model="year" ng-blur="reload()">
     <input type="button" ng-click="nextWeek()">
-    <table>
-        <tr>
-            <td></td>
-            <td colspan="2" ng-repeat="day in days">{{day.name}}</td>
-        </tr>
-        <tr ng-repeat-start="number in hourNumbers">
-            <td rowspan="2">{{number}}</td>
-            <td ng-repeat-start="day in days">
-                <select ng-model="classesT[number][day.number]" ng-options="schoolClass as schoolClass.name for schoolClass in classes"></select>
-            </td>
-            <td ng-repeat-end="">
-                <select ng-model="subjectsT[number][day.number]" ng-options="subject as subject.name for subject in subjects"></select>
-            </td>
-        </tr>
-        <tr ng-repeat-end="">
-            <td colspan="2"  ng-repeat="day in days">
-                <textarea style="width: 100%; height: 100%"></textarea>
-            </td>
-        </tr>
-    </table>
+    <div class="col-md-8">
+        <table>
+            <tr>
+                <td></td>
+                <td ng-repeat="day in days">{{day.name}}</td>
+            </tr>
+            <tr ng-repeat="number in hourNumbers">
+                <td>{{number}}</td>
+                <td ng-repeat="day in days" ng-if="!tileHidden(day.number, number)" rowspan="{{getTileRowspan(day.number, number)}}">
+                    <span ng-show="tileEmpty(day.number, number)">
+                        +
+                    </span>
+                    <span ng-hide="tileEmpty(day.number, number)">
+                        EXISTS! :D
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="col-md-4">
+
+    </div>
 </div>

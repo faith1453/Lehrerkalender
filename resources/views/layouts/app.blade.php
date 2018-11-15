@@ -12,6 +12,7 @@
     <!-- Scripts -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.5/angular.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.5/angular-route.js"></script>
+    <script src="https://underscorejs.org/underscore.js"></script>
     <script src="{{ asset('js/app.js') }}"></script>
 
     <!-- Fonts -->

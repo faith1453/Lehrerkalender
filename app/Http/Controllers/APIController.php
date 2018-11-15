@@ -122,7 +122,7 @@ class APIController extends Controller
         $teacher = $request->user();;
         $processedLessons = [];
         foreach($teacher->semesterTeacherSubjects as $semesterTeacherSubject) {
-            $lessonsQuery = $semesterTeacherSubject->lessons();
+            $lessonsQuery = $semesterTeacherSubject->lessons()->with(['semesterTeacherSubject.classSemester.schoolClass', 'semesterTeacherSubject.subjects']);
             $oneWeek = new \DateInterval('P7D');
             if($year === null || $week === null) {
                 $referenceDate = Carbon::now()->startOfWeek();
