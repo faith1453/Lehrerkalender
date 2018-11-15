@@ -120,7 +120,7 @@ class APIController extends Controller
     {
         /** @var Teacher $teacher */
         $teacher = $request->user();;
-        $formatedLessons = [];
+        $processedLessons = [];
         foreach($teacher->semesterTeacherSubjects as $semesterTeacherSubject) {
             $lessonsQuery = $semesterTeacherSubject->lessons();
             $oneWeek = new \DateInterval('P7D');
@@ -129,20 +129,30 @@ class APIController extends Controller
             } else {
                 $referenceDate = Carbon::now()->setISODate($year, $week)->startOfWeek();
             }
-            $referenceFutureDate = clone($referenceDate)->add($oneWeek);
+            $referenceFutureDate = Carbon::parse($referenceDate)->add($oneWeek);
             $lessonsQuery->where('start', '>=', $referenceDate)
                 ->where('end', '<=', $referenceFutureDate);
             /** @var Lesson $lesson */
             foreach($lessonsQuery->get() as $lesson) {
                 $startMapping = static::$timeslotMapping[$lesson->start->format('H:i:s')];
                 $endMapping = static::$timeslotMapping[$lesson->end->format('H:i:s')];
-                $lessonEntry = $lesson->toArray();
-                $lessonEntry['mappedStart'] = $startMapping;
-                $lessonEntry['mappedEnd'] = $endMapping;
-                $formatedLessons[] = $lessonEntry;
+                $lesson->startNumber = $startMapping;
+                $lesson->endNumber = $endMapping;
+                $processedLessons[] = $lesson;
             }
         }
-        return response(json_encode($formatedLessons));
+        $processedLessonsCollection = collect($processedLessons);
+        $groupedLessons = $processedLessonsCollection->groupBy(function($processedLesson) {
+            return $processedLesson->start->dayOfWeek;
+        });
+        $finalGroupedLessons = [];
+        foreach($groupedLessons as $index => $lessonGroup) {
+            $finalGroupedLessons[$index] = [];
+            foreach($lessonGroup as $lesson) {
+                $finalGroupedLessons[$index][$lesson->startNumber] = $lesson->toArray();
+            }
+        }
+        return response(json_encode($finalGroupedLessons));
     }
 
     public function saveLesson(Request $request) : Response
