@@ -20,3 +20,4 @@ Route::get('/test2', 'APIController@createNewStudent');
 Route::get('/test3', 'APIController@createNewSchoolClass');
 Route::get('/api/lessons/get/{year?}/{week?}', 'APIController@getLessons');
 Route::get('/api/classes/get', 'APIController@getClasses');
+Route::get('/api/subjects/get', 'APIController@getSubjects');

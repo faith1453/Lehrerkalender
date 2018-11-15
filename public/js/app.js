@@ -9,11 +9,29 @@ Date.prototype.getWeekNumber = function(){
 var app = angular.module('Lehrerkalender', ['ngRoute']);
 
 app.controller('LessonsController', function($scope, $http) {
+    $scope.hourNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    $scope.days = [
+        {name: 'Montag', number: 1},
+        {name: 'Dienstag', number: 2},
+        {name: 'Mittwoch', number: 3},
+        {name: 'Donnerstag', number: 4},
+        {name: 'Freitag', number: 5}
+    ];
     /*$http.get('api/lessons/get').then(
         function(result) {
             $scope.lessons = result.data;
         }
     );*/
+    $http.get('/api/classes/get').then(
+        function(response) {
+            $scope.classes = response.data;
+        }
+    );
+    $http.get('/api/subjects/get').then(
+        function(response) {
+            $scope.subjects = response.data;
+        }
+    );
     var date = new Date();
     $scope.week = date.getWeekNumber();
     $scope.year = date.getFullYear();
