@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\ClassSemester;
+use App\Models\Exam;
 use App\Models\Lesson;
 use App\Models\SchoolClass;
 use App\Models\SemesterTeacherSubject;
 use App\Models\Student;
+use App\Models\StudentExam;
 use App\Models\Teacher;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -251,5 +253,44 @@ class APIController extends Controller
                 ->where('lesson_id', '=', $gradeData['lesson_id'])
                 ->update(['grade' => $gradeData['grade']]);
         }
+    }
+
+    public function newExam(Request $request, $classId) {
+        /** @var Teacher $teacher */
+        $teacher = $request->user();
+
+        /** @var SemesterTeacherSubject $applicableSemesterTeacherSubject */
+        $applicableSemesterTeacherSubject = $teacher->semesterTeacherSubjects()->whereHas('classSemester', function($query) use ($classId) {
+            $query->where('class_id', '=', $classId);
+        })->first();
+
+        $class = $applicableSemesterTeacherSubject->classSemester->schoolClass;
+
+        $exam = new Exam();
+        $exam->name = 'Neue Klausur '.Carbon::now()->format('Y-m-d h:i:s');
+        $exam->max_points = 0;
+        $exam->semesterTeacherSubject()->associate($applicableSemesterTeacherSubject);
+        $exam->save();
+
+        foreach($class->students as $student) {
+            $studentExam = new StudentExam();
+            $studentExam->exam()->associate($exam);
+            $studentExam->student()->associate($student);
+            $studentExam->save();
+        }
+    }
+
+    public function getExams(Request $request, $classId) {
+        /** @var Teacher $teacher */
+        $teacher = $request->user();
+
+        /** @var SemesterTeacherSubject $applicableSemesterTeacherSubject */
+        $applicableSemesterTeacherSubject = $teacher->semesterTeacherSubjects()->whereHas('classSemester', function($query) use ($classId) {
+            $query->where('class_id', '=', $classId);
+        })->first();
+
+        $exams = $applicableSemesterTeacherSubject->exams()->with('tasks', 'studentExams', 'studentExams.tasks', 'studentExams.student')->get();
+
+        return response(json_encode($exams->toArray()));
     }
 }

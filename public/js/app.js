@@ -29,6 +29,7 @@ app.controller('LessonsController', function($scope, $http) {
             $scope.subjects = response.data;
         }
     );
+
     var date = new Date();
     $scope.week = date.getWeekNumber();
     $scope.year = date.getFullYear();
@@ -201,6 +202,78 @@ app.controller('GradesController', function($scope, $http) {
     };
 });
 
+app.controller('ExamsController', function($scope, $http) {
+    $scope.isClassSelected = false;
+
+    $http.get('/api/classes/get').then(
+        function(response) {
+            $scope.classes = response.data;
+        }
+    );
+
+    $scope.reload = function() {
+        $http.get('/api/exams/get/' + $scope.class.id).then(
+            function(response) {
+                $scope.exams = response.data;
+                _.each($scope.exams, function(exam) {
+                    _.each(exam.student_exams, function(studentExam) {
+                        _.each(studentExam.tasks, function(task) {
+                            task.pivot.points = parseFloat(task.pivot.points);
+                        })
+                    })
+                })
+            }
+        );
+        $scope.isClassSelected = true;
+    };
+
+    $scope.createNewExam = function() {
+        $http.get('/api/exams/new/' + $scope.class.id).then(function() {
+            $scope.reload();
+        })
+    };
+
+    $scope.getStudentPoints = function(student) {
+
+    }
+
+    $scope.getStudentPercentage = function(student) {
+
+    };
+
+    $scope.getStudentTask = function(studentExam, origTask) {
+        return _.find(studentExam.tasks, function(task) {
+            if(typeof origTask.id !== 'undefined') {
+                return origTask.id === task.id;
+            }
+            return origTask.tmp_id === task.tmp_id;
+        })
+    };
+
+    $scope.tmpTaskId = 0;
+    $scope.newTask = function() {
+        var newTask = {
+            tmp_id: $scope.tmpTaskId,
+            exam_id: $scope.exam.id,
+            name: 'Neue Aufgabe'
+        };
+        $scope.exam.tasks.push(newTask);
+        _.each($scope.exam.student_exams, function(studentExam) {
+            newTask = {
+                tmp_id: $scope.tmpTaskId,
+                exam_id: $scope.exam.id,
+                name: '',
+                pivot: {
+                    points: 0
+                }
+            };
+            console.log(studentExam);
+            studentExam.tasks.push(newTask);
+        });
+        $scope.tmpTaskId++;
+    }
+});
+
 app.config(function($routeProvider) {
     $routeProvider
         .when("/", {
@@ -213,5 +286,9 @@ app.config(function($routeProvider) {
         .when("/grades", {
             templateUrl: 'templates/grades.html',
             controller: 'GradesController'
+        })
+        .when("/exams", {
+            templateUrl: 'templates/exams.html',
+            controller: 'ExamsController'
         })
 });

@@ -26,3 +26,5 @@ Route::get('/api/grades/get/{classId}', 'APIController@getClassLessonGrades');
 Route::post('/api/grades/save', 'APIController@saveGrades');
 Route::get('/api/classes/get', 'APIController@getClasses');
 Route::get('/api/subjects/get', 'APIController@getSubjects');
+Route::get('/api/exams/get/{classId}', 'APIController@getExams');
+Route::get('/api/exams/new/{classId}', 'APIController@newExam');

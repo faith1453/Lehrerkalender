@@ -1,0 +1,28 @@
+<div>
+    <select ng-model="class" ng-options="class as class.name for class in classes" ng-change="reload()">
+        <option value="">Klasse</option>
+    </select>
+    <select ng-disabled="!isClassSelected" ng-model="exam" ng-options="exam as exam.name for exam in exams">
+        <option value="">Klausur</option>
+    </select>
+    <button ng-click="createNewExam()" ng-disabled="!isClassSelected">Neue Klausur</button>
+    <input type="text" ng-model="exam.name">
+    <input type="number" ng-model="exam.max_points">
+    <table>
+        <tr>
+            <td></td>
+            <td ng-repeat="task in exam.tasks">
+                <input type="text" ng-model="task.name">
+            </td>
+            <td ng-click="newTask()">
+                +
+            </td>
+        </tr>
+        <tr ng-repeat="studentExam in exam.student_exams">
+            <td>{{studentExam.student.first_name + ' ' + studentExam.student.last_name}}</td>
+            <td ng-repeat="task in exam.tasks">
+                <input type="number" ng-model="getStudentTask(studentExam, task).pivot.points">
+            </td>
+        </tr>
+    </table>
+</div>

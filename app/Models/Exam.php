@@ -23,6 +23,10 @@ class Exam extends Model
         'class_semester_teacher_subject_id' => 'integer',
         'max_points' => 'integer'
     ];
+
+    public function tasks() : HasMany {
+        return $this->hasMany(ExamTask::class);
+    }
     
     public function semesterTeacherSubject() : BelongsTo {
         return $this->belongsTo(SemesterTeacherSubject::class, 'class_semester_teacher_subject_id');
