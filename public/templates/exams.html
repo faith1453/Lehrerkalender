@@ -17,12 +17,18 @@
             <td ng-click="newTask()">
                 +
             </td>
+            <td>Gesamtpunktzahl</td>
+            <td>Prozent</td>
         </tr>
         <tr ng-repeat="studentExam in exam.student_exams">
             <td>{{studentExam.student.first_name + ' ' + studentExam.student.last_name}}</td>
             <td ng-repeat="task in exam.tasks">
                 <input type="number" ng-model="getStudentTask(studentExam, task).pivot.points">
             </td>
+            <td></td>
+            <td>{{getStudentPoints(studentExam)}}</td>
+            <td>{{getStudentPercentage(studentExam)}}%</td>
         </tr>
     </table>
+    <button ng-click="saveExam()">Speichern</button>
 </div>

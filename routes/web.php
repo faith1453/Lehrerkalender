@@ -28,3 +28,4 @@ Route::get('/api/classes/get', 'APIController@getClasses');
 Route::get('/api/subjects/get', 'APIController@getSubjects');
 Route::get('/api/exams/get/{classId}', 'APIController@getExams');
 Route::get('/api/exams/new/{classId}', 'APIController@newExam');
+Route::post('/api/exams/save', 'APIController@saveExam');

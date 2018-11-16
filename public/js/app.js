@@ -233,12 +233,18 @@ app.controller('ExamsController', function($scope, $http) {
         })
     };
 
-    $scope.getStudentPoints = function(student) {
+    $scope.saveExam = function() {
+        $http.post('/api/exams/save', {exam: $scope.exam});
+    };
 
-    }
+    $scope.getStudentPoints = function(studentExam) {
+        return _.reduce(studentExam.tasks, function(memo, task) {
+            return memo + task.pivot.points;
+        }, 0);
+    };
 
-    $scope.getStudentPercentage = function(student) {
-
+    $scope.getStudentPercentage = function(studentExam) {
+        return ($scope.getStudentPoints(studentExam) / $scope.exam.max_points * 100);
     };
 
     $scope.getStudentTask = function(studentExam, origTask) {

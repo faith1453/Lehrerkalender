@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ClassSemester;
 use App\Models\Exam;
+use App\Models\ExamTask;
 use App\Models\Lesson;
 use App\Models\SchoolClass;
 use App\Models\SemesterTeacherSubject;
@@ -12,7 +12,6 @@ use App\Models\StudentExam;
 use App\Models\Teacher;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -30,7 +29,9 @@ class APIController extends Controller
         '13:15:00' => 7,
         '14:00:00' => 8,
         '15:05:00' => 9,
-        '15:50:00' => 10
+        '15:50:00' => 10,
+        '16:55:00' => 11,
+        '17:40:00' => 12
     ];
 
     public function createNewTeacher(Request $request) : Response
@@ -100,11 +101,18 @@ class APIController extends Controller
         return response('Failed', 400);
     }
 
+    /**
+     * Returns an Response with the classes of the currently logged-in Teacher in json-format
+     *
+     * @param Request $request
+     * @return Response
+     */
     public function getClasses(Request $request) : Response
     {
+        // Get the user that made the request
         /** @var Teacher $teacher */
         $teacher = $request->user();
-        $semesterTeacherSubjects = $teacher->semesterTeacherSubjects()->get();
+        $semesterTeacherSubjects = $teacher->semesterTeacherSubjects;
         $classes = [];
         /** @var SemesterTeacherSubject $semesterTeacherSubject */
         foreach($semesterTeacherSubjects as $semesterTeacherSubject) {
@@ -113,14 +121,28 @@ class APIController extends Controller
         return response(json_encode(collect($classes)->unique()));
     }
 
+    /**
+     * Returns all the subjects available to the currently logged in Teacher
+     *
+     * @param Request $request
+     * @return Response
+     */
     public function getSubjects(Request $request) : Response
     {
+        // Get the user that made the request
         /** @var Teacher $teacher */
         $teacher = $request->user();
         $subjects = $teacher->subjects->toArray();
         return response(json_encode($subjects));
     }
 
+    /**
+     * @param Request $request
+     * @param null $year
+     * @param null $week
+     * @return Response
+     * @throws \Exception
+     */
     public function getLessons(Request $request, $year = null, $week = null) : Response
     {
         /** @var Teacher $teacher */
@@ -292,5 +314,45 @@ class APIController extends Controller
         $exams = $applicableSemesterTeacherSubject->exams()->with('tasks', 'studentExams', 'studentExams.tasks', 'studentExams.student')->get();
 
         return response(json_encode($exams->toArray()));
+    }
+
+    public function saveExam(Request $request) {
+        $examData = $request->get('exam');
+        /** @var Exam $exam */
+        $exam = Exam::find($examData['id']);
+        $exam->name = $examData['name'];
+        $exam->max_points = $examData['max_points'];
+        $exam->save();
+        foreach($examData['tasks'] as $taskData) {
+            if(array_key_exists('id', $taskData)) {
+                foreach($examData['student_exams'] as $studentExam) {
+                    $collectedStudentExam = collect($studentExam);
+                    $tasks = collect($collectedStudentExam->get('tasks'));
+                    $pivots = $tasks->pluck('pivot');
+                    foreach($pivots as $pivot) {
+                        DB::table('student_exam_task')
+                            ->where('exam_task_id', '=', $pivot['exam_task_id'])
+                            ->where('student_exam_id', '=', $pivot['student_exam_id'])
+                            ->update(['points' => $pivot['points']]);
+                    }
+                }
+                continue;
+            }
+            $tmpId = $taskData['tmp_id'];
+            $task = new ExamTask();
+            $task->name = $taskData['name'];
+            $task->exam()->associate($exam);
+            $task->save();
+
+            foreach($examData['student_exams'] as $studentExam) {
+                $collectedStudentExam = collect($studentExam);
+                $tasks = collect($collectedStudentExam->get('tasks'));
+                $pivots = $tasks->where('tmp_id', $tmpId)->pluck('pivot');
+                foreach($pivots as $pivot) {
+                    DB::table('student_exam_task')
+                        ->insert(['student_exam_id' => $studentExam['id'], 'exam_task_id' => $task->id, 'points' => $pivot['points']]);
+                }
+            }
+        }
     }
 }
