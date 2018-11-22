@@ -6,7 +6,7 @@ Dieses Projekt implemntiert die Anfordernungen des OSP Projekts "Lehrerkalender"
 
 Um das Projekt herunterladen zu können, einfach
 ```bash
-git clone URL
+git clone https://github.com/faith1453/Lehrerkalender.git
 ```
 ### Vorraussetzungen
 
@@ -47,8 +47,6 @@ Für die Verbindung zum AWS-Server muss sich zu diesem mit ssh und einem Schlüs
 ssh -i "AWS-KEY/aws-osp2.pem" ec2-user@ec2-18-196-136-105.eu-central-1.compute.amazonaws.com
 ```
 eine Verbindung zum Server aufgebaut werden.
-
-
 
 ## Running the tests
 
